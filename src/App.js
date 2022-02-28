@@ -8,6 +8,9 @@ import {  Route, Routes} from 'react-router-dom';
 import Logo from './Pages/Logo/Logo';
 import Home from './Pages/HOME/Home';
 import About from './Pages/About/About';
+import Profile from './Pages/Profile/Profile';
+import PostNav from './Pages/PostNav/PostNav';
+import PostCard from './Pages/PostCard/PostCard';
 
 
 
@@ -17,7 +20,7 @@ function App() {
   return (
     <div >
      
-         <Navbar/>
+         {/* <Navbar/>
                 
           <Routes>
             <Route path="/"   element={<Tabs />} >
@@ -29,7 +32,10 @@ function App() {
                 <Route path="home" element={<Home />} />
               
             </Route>
-          </Routes>
+          </Routes> */}
+          {/* <Profile/> */}
+          <PostNav/>
+          <PostCard/>
      
     </div>
   );
