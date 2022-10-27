@@ -1,70 +1,145 @@
-# Getting Started with Create React App
+# Product Page where we can implement pagination
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+import { Container } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Button, CardActions, Grid } from "@mui/material";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardMedia from "@mui/material/CardMedia";
+import Typography from "@mui/material/Typography";
+import useAuth from "../../../hooks/useAuth";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import Test from "../../Test";
 
-## Available Scripts
+const Product = () => {
+  const [products, setProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(1);
+  const { user } = useAuth();
+  const email = user.email;
+  let unique = Math.floor(Math.random() * 100);
+  let key = unique.toString();
 
-In the project directory, you can run:
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const res = await axios.get("http://localhost:5000/products");
+      setProducts(res.data);
+    };
+    fetchProducts();
+  }, []);
 
-### `npm start`
+  //Get current posts
+  const indexOfLastProducts = currentPage * productsPerPage;
+  const indexOfFirstPost = indexOfLastProducts - productsPerPage;
+  const currentProducts = products.slice(indexOfFirstPost, indexOfLastProducts);
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+  //Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+  const handleAddToCart = (index) => {
+    const data = products[index];
+    data.email = email;
+    data.key = key;
 
-### `npm test`
+    fetch("http://localhost:5000/orders", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  };
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+  return (
+    <Container>
+      <Typography
+        sx={{
+          fontWeight: 600,
+          mb: 3,
+          mt: 6,
+          borderBottom: 2,
+          color: "text.secondary",
+        }}
+        variant="h4"
+        component="div"
+      >
+        Products We Provide
+      </Typography>
+      <Grid
+        container
+        spacing={{ xs: 2, md: 3 }}
+        columns={{ xs: 4, sm: 8, md: 12 }}
+      >
+        {currentProducts.map((product, index) => (
+          <Grid key={index} sx={{ mb: 4 }} item xs={3} sm={4} md={4}>
+            <Card
+              sx={{ minWidth: 275, border: 0, boxShadow: 3 }}
+              variant="outlined"
+            >
+              <Typography variant="h5" component="div">
+                {product.name}
+              </Typography>
+              <CardMedia
+                component="img"
+                style={{ width: "auto", height: "150px", margin: "0 auto" }}
+                image={product.img}
+                alt="green iguana"
+              />
+              <CardContent>
+                <Typography variant="body2" color="text.secondary">
+                  {product.details.slice(0, 70)}..
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {product.price} $
+                </Typography>
+              </CardContent>
+              <CardActions>
+                <Link to="/purchase">
+                  <Button onClick={() => handleAddToCart(index)} size="small">
+                    By Now
+                  </Button>
+                </Link>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+      <Test
+        productsPerPage={productsPerPage}
+        totalPosts={products.length}
+        paginate={paginate}
+      />
+    </Container>
+  );
+};
 
-### `npm run build`
+export default Product;
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+##Pagenation Page setup here
+import React from "react";
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+const Test = ({ productsPerPage, totalPosts, paginate }) => {
+  const pageNumbers = [];
 
-### `npm run eject`
+  for (let i = 1; i <= Math.ceil(totalPosts / productsPerPage); i++) {
+    pageNumbers.push(i);
+  }
+  return (
+    <nav>
+      <ul className="pagination">
+        {pageNumbers.map((number) => (
+          <li key={number} className="page-item">
+            <span onClick={() => paginate(number)} className="page-link">
+              {number}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+};
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+export default Test;
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
